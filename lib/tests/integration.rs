@@ -5,7 +5,7 @@ use test_stand::TestStand;
 #[derive(Database)]
 #[cfg_attr(test, derive(TestStand))]
 #[database("test")]
-#[migration("migrations")]
+#[migration("../migrations")]
 pub struct PrimaryDatabase(sqlx::PgPool);
 
 #[rocket::launch]

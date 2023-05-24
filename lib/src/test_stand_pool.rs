@@ -30,7 +30,7 @@ mod sqlx {
 
             let temp_db = format!("{}_{}", database, Uuid::new_v4());
             info!("creating temporary database: {}", temp_db);
-            sqlx::query(&format!(r#"CREATE DATABASE {}"#, temp_db))
+            sqlx::query(&format!(r#"CREATE DATABASE "{}""#, temp_db))
                 .execute(&pool)
                 .await
                 .map_err(Error::Init)?;

@@ -26,6 +26,10 @@
               inherit inputs pkgs;
               modules = [
                 {
+                  env = {
+                    DATABASE_URL = "postgres://localhost:5432/integration";
+                  };
+
                   services = {
                     postgres = {
                       enable = true;
