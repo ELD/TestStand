@@ -1,0 +1,12 @@
+[package]
+name = "test_stand_codegen"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1"
+quote = "1"
+devise = "0.3"

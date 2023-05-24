@@ -1,0 +1,14 @@
+[package]
+name = "test_stand"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+
+[dependencies]
+test_stand_codegen = { path = "../codegen" }
+rocket = { git = "https://github.com/SergioBenitez/Rocket", branch = "master" }
+rocket_db_pools = { git = "https://github.com/SergioBenitez/Rocket", branch = "master", features = ["sqlx_postgres"] }
+uuid = { version = "1", features = ["v4"] }
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "postgres"] }
+
