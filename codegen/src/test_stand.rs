@@ -7,6 +7,8 @@ use quote::{quote, quote_spanned};
 const ONE_UNNAMED_FIELD: &str = "struct must have exactly one unnamed field";
 const ONE_DATABASE_ATTR: &str = "struct must have exactly one `#[database(\"name\")]` attribute";
 const ONE_MIGRATIONS_ATTR: &str = "struct must have exactly one `#[migration(\"path\")]` attribute";
+const _ONE_CONNECTION_TYPE_ATTR: &str =
+    "struct must have exactly one `#[connection_type(type)]` attribute";
 
 #[derive(Debug, FromMeta)]
 struct DatabaseAttribute {
@@ -15,7 +17,7 @@ struct DatabaseAttribute {
 }
 
 #[derive(Debug, FromMeta)]
-struct MigrationAttribute {
+struct MigrationPathAttribute {
     #[meta(naked)]
     path: String,
 }
@@ -35,9 +37,10 @@ pub(crate) fn derive_test_stand(input: proc_macro::TokenStream) -> proc_macro::T
             let db_name = DatabaseAttribute::one_from_attrs("database", &s.attrs)?
                 .map(|attr| attr.name)
                 .ok_or_else(|| s.span().error(ONE_DATABASE_ATTR))?;
-            let migration_path = MigrationAttribute::one_from_attrs("migration", &s.attrs)?
-                .map(|attr| attr.path)
-                .ok_or_else(|| s.span().error(ONE_MIGRATIONS_ATTR))?;
+            let migration_path =
+                MigrationPathAttribute::one_from_attrs("migration_path", &s.attrs)?
+                    .map(|attr| attr.path)
+                    .ok_or_else(|| s.span().error(ONE_MIGRATIONS_ATTR))?;
 
             let fairing_name = format!("'{}' Test Stand", db_name);
 

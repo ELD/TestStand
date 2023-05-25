@@ -2,10 +2,9 @@ use rocket::{local::asynchronous::Client, post, routes};
 use rocket_db_pools::{sqlx, Connection, Database};
 use test_stand::TestStand;
 
-#[derive(Database)]
-#[cfg_attr(test, derive(TestStand))]
+#[derive(Database, TestStand)]
 #[database("test")]
-#[migration("../migrations")]
+#[migration_path("../migrations")]
 pub struct PrimaryDatabase(sqlx::PgPool);
 
 #[rocket::launch]
