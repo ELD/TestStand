@@ -54,6 +54,8 @@
                   pre-commit = {
                     settings = {
                       clippy.denyWarnings = true;
+                      clippy.allFeatures = true;
+                      clippy.offline = false;
                     };
 
                     hooks = {
