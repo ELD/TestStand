@@ -4,6 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
+# sqlx drivers and features
+sqlx = ["sqlx/runtime-tokio-rustls"]
+sqlx_postgres = ["sqlx", "sqlx/postgres"]
+sqlx_mysql = ["sqlx", "sqlx/mysql"]
+sqlx_sqlite = ["sqlx", "sqlx/sqlite"]
+
+# deadpool drivers and features
+deadpool_redis = []
+deadpool_postgres = []
 
 [dependencies]
 test_stand_codegen = { path = "../codegen" }

@@ -16,6 +16,7 @@ pub trait TestStandPool: Pool + Send + Sync + 'static {
 
 // ! This needs to be behind a feature flag
 // ! Improve error handling
+#[cfg(feature = "sqlx")]
 mod sqlx {
     use rocket::{
         figment::{self, providers},
