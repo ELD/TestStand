@@ -1,3 +1,4 @@
+mod error;
 mod test_stand;
 mod test_stand_pool;
 

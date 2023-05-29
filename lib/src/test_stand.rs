@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rocket::{fairing, figment::providers, Build, Rocket};
+use rocket::{error, fairing, figment::providers, Build, Rocket};
 use rocket_db_pools::Database;
 
 use crate::TestStandPool;
@@ -60,17 +60,27 @@ impl<T: TestStand> fairing::Fairing for Initializer<T> {
             .merge(providers::Serialized::default("connect_timeout", 5));
 
         let database_name =
-            <<T as TestStand>::TestStand as TestStandPool>::create_database(&figment)
-                .await
-                .unwrap();
+            match <<T as TestStand>::TestStand as TestStandPool>::create_database(&figment).await {
+                Ok(database_name) => database_name,
+                Err(e) => {
+                    error!("could not create temporary database: {}", e);
+                    return Err(rocket);
+                }
+            };
 
-        let connection_url = <<T as TestStand>::TestStand as TestStandPool>::migrate_database(
+        let connection_url = match <<T as TestStand>::TestStand as TestStandPool>::migrate_database(
             &database_name,
             T::MIGRATION_PATH,
             &figment,
         )
         .await
-        .unwrap();
+        {
+            Ok(connection_url) => connection_url,
+            Err(e) => {
+                error!("failed to migrate the temporary database: {}", e);
+                return Err(rocket);
+            }
+        };
 
         let new_conf = config.clone().merge(providers::Serialized::default(
             &format!("databases.{}.url", <T as TestStand>::NAME),
