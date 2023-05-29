@@ -16,6 +16,7 @@ pub trait TestStand: Database {
     }
 }
 
+// ? Can this be abstracted across other frameworks?
 pub struct Initializer<T: TestStand>(Option<&'static str>, PhantomData<fn() -> T>);
 
 impl<T: TestStand> Initializer<T> {
@@ -43,6 +44,7 @@ impl<T: TestStand> fairing::Fairing for Initializer<T> {
         }
     }
 
+    // ! Improve this error handling
     async fn on_ignite(&self, rocket: Rocket<Build>) -> fairing::Result {
         let config = rocket.figment();
         let workers: usize = config

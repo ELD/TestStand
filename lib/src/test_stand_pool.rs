@@ -1,17 +1,21 @@
 use rocket::figment;
 use rocket_db_pools::Pool;
 
+// ? If the `connection_type` attribute is used, this should be impl'd on that instead
+// ? Use a custom `Error` type instead of piggybacking off `Pool`'s?
 #[rocket::async_trait]
 pub trait TestStandPool: Pool + Send + Sync + 'static {
-    async fn create_database(config: &figment::Figment) -> Result<String, Self::Error>;
+    async fn create_database(config: &figment::Figment) -> Result<String, <Self as Pool>::Error>;
 
     async fn migrate_database(
         database_name: &str,
         migration_path: &str,
         config: &figment::Figment,
-    ) -> Result<String, Self::Error>;
+    ) -> Result<String, <Self as Pool>::Error>;
 }
 
+// ! This needs to be behind a feature flag
+// ! Improve error handling
 mod sqlx {
     use rocket::{
         figment::{self, providers},
@@ -21,8 +25,17 @@ mod sqlx {
     use uuid::Uuid;
 
     #[rocket::async_trait]
-    impl crate::TestStandPool for sqlx::Pool<sqlx::Postgres> {
-        async fn create_database(config: &figment::Figment) -> Result<String, Self::Error> {
+    impl<DB> crate::TestStandPool for sqlx::Pool<DB>
+    where
+        DB: sqlx::Database,
+        <DB as sqlx::Database>::Connection: sqlx::migrate::Migrate,
+        for<'e> &'e mut <DB as sqlx::Database>::Connection: sqlx::Executor<'e, Database = DB>,
+        for<'args> <DB as sqlx::database::HasArguments<'args>>::Arguments:
+            sqlx::IntoArguments<'args, DB>,
+    {
+        async fn create_database(
+            config: &figment::Figment,
+        ) -> Result<String, <Self as Pool>::Error> {
             let parsed_config = config.extract::<Config>()?;
             let database =
                 &parsed_config.url[parsed_config.url.rfind('/').unwrap_or_default() + 1..];
@@ -44,7 +57,7 @@ mod sqlx {
             database_name: &str,
             migration_path: &str,
             config: &figment::Figment,
-        ) -> Result<String, Self::Error> {
+        ) -> Result<String, <Self as Pool>::Error> {
             let mut url: String = config.extract_inner("url").unwrap_or_default();
             url.replace_range(url.rfind('/').unwrap_or_default() + 1.., database_name);
             let new_config = config
